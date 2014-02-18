@@ -12,7 +12,11 @@ def import_csv():
     model.db.session.commit()
 
 
-import os
+def clone_repositories():
+    vcs_import.clone_git_repositories('gits1')
+
+#import os
 #os.unlink('test.db')
-reset_db()
-import_csv()
+#reset_db()
+#import_csv()
+clone_repositories()

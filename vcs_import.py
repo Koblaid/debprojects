@@ -71,24 +71,15 @@ def import_csv(filepath):
             m.db.session.commit()
 
 
-def clone_gits():
-    r = csv.reader(open('/home/ben/projects/debcensus/debprojects.csv'))
-
-    gits = {}
-    for row in r:
-        url = row[1]
-        if url.startswith('git'):
-            gits[row[0]] = row[1].split('\n')
-
-
-    os.chdir('gits')
-    for project_name, git in gits.iteritems():
-        for g in git:
-            g = g.replace('git://', 'http://')
-            try:
-                print subprocess.check_output(['git', 'clone', g])
-            except Exception, e:
-                print e
+def clone_git_repositories(path):
+    os.chdir(path)
+    q = m.db.session.query(m.Repository).join(m.RepositoryType).filter(m.RepositoryType.name=='git')
+    for repo in q:
+        url = repo.url.replace('git://', 'http://')
+        try:
+            print subprocess.check_output(['git', 'clone', url])
+        except Exception, e:
+            print e
 
 def analyse_gits():
     original_dir = os.getcwd()
