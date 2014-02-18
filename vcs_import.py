@@ -7,26 +7,54 @@ import StringIO
 import model as m
 
 
+def _parse_repository(row, line_num):
+    repo_urls = row['repository_url'].strip().split('\n') if row['repository_url'] else []
+    repo_types = row['repository_type'].strip().split('\n') if row['repository_type'] else []
+    repo_webview_urls = row['repository_webview_url'].strip().split('\n') if row['repository_webview_url'] else []
+
+    if len(repo_urls) != len(repo_types):
+        raise Exception('Error in line %s: Number of lines in repository_url must match number of entries in repository_type' % line_num+1)
+    if repo_webview_urls and len(repo_urls) != len(repo_webview_urls):
+        raise Exception('Error in line %s: Number of lines in repository_url must match number of entries in repository_webview_url' % line_num)
+
+    repos = []
+    for i in xrange(len(repo_urls)):
+        repos.append(dict(
+            url=repo_urls[i],
+            repository_type=repo_types[i],
+            webview_url=repo_webview_urls[i] if repo_webview_urls else None
+        ))
+    return repos
+
+
 
 def import_csv(filepath):
-    vcs_types = {}
-    for vcs in m.VcsType.query.all():
-        vcs_types[vcs.name] = vcs
+    repo_types = {}
+    for repo_type in m.RepositoryType.query.all():
+        repo_types[repo_type.name] = repo_type
 
     with open(filepath) as f:
         r = csv.DictReader(f)
-        for row in r:
+        for i, row in enumerate(r):
             project = m.Project()
             project.name = row['name']
             project.description = row['description'] or None
             project.documentation = row['documentation'] or None
             project.documentation_url = row['documentation_url'] or None
             project.status = row['status'] or None
-            project.vcs_url = row['vcs_url'] or None
-            if row['vcs_type']:
-                project.vcs_type_id = vcs_types[row['vcs_type']].id
 
-            maintainers = []
+
+            for repo_dict in _parse_repository(row, i):
+                print repo_dict
+                repo = m.Repository.query.filter_by(url=repo_dict['url']).first()
+                if not repo:
+                    repo_type_id = repo_types[repo_dict['repository_type']].id
+                    repo = m.Repository(url=repo_dict['url'],
+                                        repository_type=repo_type_id,
+                                        webview_url=repo_dict['webview_url'])
+
+                project.repositories.append(repo)
+
             for maintainer_name in row['maintainers'].split('\n'):
                 maintainer_name = maintainer_name.strip()
                 if not maintainer_name:
@@ -40,6 +68,7 @@ def import_csv(filepath):
                 project.maintainers.append(maintainer)
 
             m.db.session.add(project)
+            m.db.session.commit()
 
 
 def clone_gits():
