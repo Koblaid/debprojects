@@ -4,7 +4,42 @@ import os
 import json
 import StringIO
 
-from model import db
+import model as m
+
+
+
+def import_csv(filepath):
+    vcs_types = {}
+    for vcs in m.VcsType.query.all():
+        vcs_types[vcs.name] = vcs
+
+    with open(filepath) as f:
+        r = csv.DictReader(f)
+        for row in r:
+            project = m.Project()
+            project.name = row['name']
+            project.description = row['description'] or None
+            project.documentation = row['documentation'] or None
+            project.documentation_url = row['documentation_url'] or None
+            project.status = row['status'] or None
+            project.vcs_url = row['vcs_url'] or None
+            if row['vcs_type']:
+                project.vcs_type_id = vcs_types[row['vcs_type']].id
+
+            maintainers = []
+            for maintainer_name in row['maintainers'].split('\n'):
+                maintainer_name = maintainer_name.strip()
+                if not maintainer_name:
+                    continue
+
+                maintainer = m.Maintainer.query.filter_by(name=maintainer_name).first()
+                if not maintainer:
+                    maintainer = m.Maintainer()
+                    maintainer.name = maintainer_name
+
+                project.maintainers.append(maintainer)
+
+            m.db.session.add(project)
 
 
 def clone_gits():
@@ -115,5 +150,5 @@ def json_to_csv():
 
 
 
-analyse_gits()
-json_to_csv()
+#analyse_gits()
+#json_to_csv()
