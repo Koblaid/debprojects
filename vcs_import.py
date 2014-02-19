@@ -45,7 +45,6 @@ def import_csv(filepath):
 
 
             for repo_dict in _parse_repository(row, i):
-                print repo_dict
                 repo = m.Repository.query.filter_by(url=repo_dict['url']).first()
                 if not repo:
                     repo_type_id = repo_types[repo_dict['repository_type']].id
