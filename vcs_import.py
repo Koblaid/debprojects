@@ -84,7 +84,7 @@ def import_csv(filepath):
 
 def clone_git_repositories(path):
     with cd(path):
-        q = m.db.session.query(m.Repository).join(m.RepositoryType).filter(m.RepositoryType.name=='git')
+        q = m.get_git_repositories()
         for repo in q:
             url = repo.url.replace('git://', 'http://')
             try:

@@ -77,3 +77,10 @@ def insert_initial_data():
     db.session.add(RepositoryType(name='bzr'))
     db.session.add(RepositoryType(name='svn'))
     db.session.add(RepositoryType(name='hg'))
+
+
+def get_git_repositories():
+    return db.session.query(Repository).\
+                      join(RepositoryType).\
+                      filter(RepositoryType.name=='git').\
+                      order_by(Repository.url)
