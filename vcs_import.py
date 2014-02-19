@@ -87,8 +87,7 @@ def get_git_repository_name(git_url):
 
 
 def clone_git_repositories(path):
-    q = m.get_git_repositories()
-    for repo in q:
+    for repo in m.get_git_repositories():
         url = repo.url.replace('git://', 'http://')
         outpath = os.path.join(path, get_git_repository_name(url))
         if os.path.exists(outpath):
