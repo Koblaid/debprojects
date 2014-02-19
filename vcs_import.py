@@ -82,15 +82,23 @@ def import_csv(filepath):
             m.db.session.commit()
 
 
+def get_git_repository_name(git_url):
+    return os.path.splitext(os.path.basename(git_url))[0]
+
+
 def clone_git_repositories(path):
-    with cd(path):
-        q = m.get_git_repositories()
-        for repo in q:
-            url = repo.url.replace('git://', 'http://')
-            try:
-                print subprocess.check_output(['git', 'clone', url])
-            except Exception, e:
-                print e
+    q = m.get_git_repositories()
+    for repo in q:
+        url = repo.url.replace('git://', 'http://')
+        outpath = os.path.join(path, get_git_repository_name(url))
+        if os.path.exists(outpath):
+            print 'Folder %s already present, skipping' % outpath
+            continue
+
+        try:
+            print subprocess.check_output(['git', 'clone', url, outpath])
+        except Exception, e:
+            print e
 
 
 def analyse_gits():
