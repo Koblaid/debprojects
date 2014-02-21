@@ -1,0 +1,25 @@
+<table border=1>
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Description</th>
+            <th>Documentation</th>
+            <th>Status</th>
+            <th>Maintainer</th>
+            <th>Repositories</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in projects %}
+        <tr>
+            <td><a href="/project/{{p.id}}">{{ p.name }}</a></td>
+            <td>{{ p.description or '' }}</td>
+            <td>{{ p.documentation or p.documentation_url or ''}}</td>
+            <td>{{ p.status or '' }}</td>
+            <td>{{ p.maintainers|join(', ', attribute='name') }}</td>
+            <td>{{ p.repositories|join(', ', attribute='url') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
