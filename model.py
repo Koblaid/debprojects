@@ -19,7 +19,8 @@ class RepositoryType(db.Model):
 class Repository(db.Model):
     def __unicode__(self): return self.url
     id = db.Column(db.Integer, primary_key=True)
-    repository_type = db.Column('repository_type_id', db.Integer, db.ForeignKey('repository_type.id'), nullable=False)
+    repository_type_id = db.Column(db.Integer, db.ForeignKey('repository_type.id'), nullable=False)
+    repository_type = relationship(RepositoryType, backref=backref('repositories'))
     url = db.Column(db.String(500), nullable=False, unique=True)
     webview_url = db.Column(db.String(500))
 
