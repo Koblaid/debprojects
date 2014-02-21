@@ -1,7 +1,7 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
-from sqlalchemy import Table
+from sqlalchemy import Table, UniqueConstraint
 
 
 app = Flask(__name__)
@@ -23,13 +23,15 @@ class Repository(db.Model):
 
 maintainance = db.Table('maintainance',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-    db.Column('maintainer_id', db.Integer, db.ForeignKey('maintainer.id'))
+    db.Column('maintainer_id', db.Integer, db.ForeignKey('maintainer.id')),
+    UniqueConstraint('project_id', 'maintainer_id'),
 )
 
 
 project_repository = db.Table('project_repository',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-    db.Column('repository_id', db.Integer, db.ForeignKey('repository.id'))
+    db.Column('repository_id', db.Integer, db.ForeignKey('repository.id')),
+    UniqueConstraint('project_id', 'repository_id')
 )
 
 class Project(db.Model):
@@ -70,6 +72,7 @@ class UsedLanguage(db.Model):
     code_lines = db.Column(db.Integer)
     comment_lines = db.Column(db.Integer)
     blank_lines = db.Column(db.Integer)
+    __table_args__ = (UniqueConstraint('repository_id', 'language_id'),)
 
 
 def insert_initial_data():
