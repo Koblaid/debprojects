@@ -2,6 +2,7 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from sqlalchemy import Table, UniqueConstraint
+from sqlalchemy.orm import relationship, backref
 
 
 app = Flask(__name__)
@@ -66,8 +67,12 @@ class Language(db.Model):
 
 class UsedLanguage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    repository = db.Column('repository_id', db.Integer, db.ForeignKey('repository.id'), nullable=False)
-    language = db.Column('language_id', db.Integer, db.ForeignKey('language.id'), nullable=False)
+    repository_id = db.Column(db.Integer, db.ForeignKey('repository.id'), nullable=False)
+    repository = relationship(Repository, backref=backref('used_languages'))
+
+    language_id = db.Column(db.Integer, db.ForeignKey('language.id'), nullable=False)
+    language = relationship(Language, backref=backref('used_languages'))
+
     number_of_files = db.Column(db.Integer)
     code_lines = db.Column(db.Integer)
     comment_lines = db.Column(db.Integer)
