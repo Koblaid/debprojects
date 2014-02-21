@@ -127,25 +127,36 @@ def analyse_git_repositories(path):
             output = subprocess.check_output(["du -s --exclude=.git/*"], shell=True)
             repo.size_of_files = output.split()[0]
 
-        cmd = 'cloc --not-match-f="jquery.*\.js" --ignored=%s-ignored.txt --csv --quiet %s' % (repo_dir, full_path)
-        output = subprocess.check_output([cmd], shell=True)
-        csv_string = output.split('\n\n')[1]
-        rows = csv.DictReader(StringIO.StringIO(csv_string))
-
-        stats['languages'] = {}
-        for row in rows:
-            stats['languages'][row['language']] = dict(
-                files=row['files'],
-                comment=row['comment'],
-                code=row['code'],
-                blank=row['blank'],
-            )
-
-        all_stats[repo_dir] = stats
+    analyze_used_languages(repo)
 
 
-    with open('all.json', 'w') as out_f:
-        out_f.write(json.dumps(all_stats))
+def analyze_used_languages(repo):
+    cmd = 'cloc --not-match-f="jquery.*\.js" --ignored=%s-ignored.txt --csv --quiet %s' % (get_git_repository_name(repo.url), full_path)
+    output = subprocess.check_output([cmd], shell=True)
+    csv_string = output.split('\n\n')[1]
+    rows = csv.DictReader(StringIO.StringIO(csv_string))
+
+    stats['languages'] = {}
+    for row in rows:
+        language = m.Language.query.filter(m.Language.name==row['language']).first()
+        if not language:
+            language = m.Language(name=row['language'])
+            m.db.session.add(language)
+            m.db.session.commit()
+
+        used_lang = m.UsedLanguage.query.filter(m.UsedLanguage.repository==repo,
+                                                m.UsedLanguage.language==language).\
+                                                first()
+
+        if not used_lang:
+            used_lang = m.UsedLanguage(repository=repo, language=language)
+
+        used_lang.number_of_files = row['files']
+        used_lang.code_lines = row['code']
+        used_lang.comment_lines = row['comment']
+        used_lang.blank_lines = row['blank']
+
+
 
 
 def json_to_csv():
