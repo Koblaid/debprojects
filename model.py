@@ -65,7 +65,7 @@ class Language(db.Model):
 class UsedLanguage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     repository = db.Column('repository_id', db.Integer, db.ForeignKey('repository.id'), nullable=False)
-    language = db.Column('maintainer_id', db.Integer, db.ForeignKey('maintainer.id'), nullable=False)
+    language = db.Column('language_id', db.Integer, db.ForeignKey('language.id'), nullable=False)
     number_of_files = db.Column(db.Integer)
     code_lines = db.Column(db.Integer)
     comment_lines = db.Column(db.Integer)
