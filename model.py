@@ -20,6 +20,13 @@ class Repository(db.Model):
     url = db.Column(db.String(500), nullable=False, unique=True)
     webview_url = db.Column(db.String(500))
 
+    number_of_commits = db.Column(db.Integer)
+    number_of_authors = db.Column(db.Integer)
+    number_of_files = db.Column(db.Integer)
+    size_of_files = db.Column(db.Integer)
+    first_commit_date = db.Column(db.DateTime)
+    latest_commit_date = db.Column(db.DateTime)
+
 
 maintainance = db.Table('maintainance',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
@@ -45,13 +52,6 @@ class Project(db.Model):
                                   backref=db.backref('projects'))
     repositories = db.relationship('Repository', secondary='project_repository',
                                   backref=db.backref('projects'))
-
-    number_of_commits = db.Column(db.Integer)
-    number_of_authors = db.Column(db.Integer)
-    number_of_files = db.Column(db.Integer)
-    size_of_files = db.Column(db.Integer)
-    first_commit = db.Column(db.DateTime)
-    latest_commit = db.Column(db.DateTime)
 
 
 class Maintainer(db.Model):
