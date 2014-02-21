@@ -24,8 +24,8 @@ class Repository(db.Model):
     number_of_authors = db.Column(db.Integer)
     number_of_files = db.Column(db.Integer)
     size_of_files = db.Column(db.Integer)
-    first_commit_date = db.Column(db.DateTime)
-    latest_commit_date = db.Column(db.DateTime)
+    first_commit_date_utc = db.Column(db.DateTime)
+    latest_commit_date_utc = db.Column(db.DateTime)
 
 
 maintainance = db.Table('maintainance',

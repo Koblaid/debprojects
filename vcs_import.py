@@ -5,6 +5,8 @@ import json
 import StringIO
 from contextlib import contextmanager
 
+from dateutil import parser, tz
+
 import model as m
 
 
@@ -100,28 +102,30 @@ def clone_git_repositories(path):
             print e
 
 
-def analyse_gits():
-    all_stats = {}
-
-    for repo_dir in sorted(os.listdir('gits')):
-        full_path = os.path.join('gits', repo_dir)
+def analyse_git_repositories(path):
+    for repo in m.get_git_repositories():
+        full_path = os.path.join(path, get_git_repository_name(repo.url))
         if not os.path.isdir(full_path):
+            print 'Folder %s not found, skipping' % full_path
             continue
 
-        stats = {}
-
         with cd(full_path):
-            output = subprocess.check_output(["git rev-list --format=format:'%ai' --max-count=1 `git rev-parse HEAD`"], shell=True)
-            stats['latest_commit_date'] = output.splitlines()[1]
+            utc_zone = tz.tzutc()
 
-            stats['number_of_authors'] = subprocess.check_output(["git shortlog -sn | wc -l"], shell=True).strip()
+            first = subprocess.check_output(["git rev-list --format=format:'%ai' --max-count=1 `git rev-list --max-parents=0 HEAD`"], shell=True)
+            repo.first_commit_date_utc = parser.parse(first.splitlines()[1]).astimezone(utc_zone).replace(tzinfo=None)
 
-            stats['number_of_commits'] = subprocess.check_output(["git log --oneline | wc -l"], shell=True).strip()
+            latest = subprocess.check_output(["git rev-list --format=format:'%ai' --max-count=1 `git rev-parse HEAD`"], shell=True)
+            repo.latest_commit_date = parser.parse(latest.splitlines()[1]).astimezone(utc_zone).replace(tzinfo=None)
 
-            stats['number_of_files'] = subprocess.check_output(["git ls-files | wc -l"], shell=True).strip()
+            repo.number_of_authors = subprocess.check_output(["git shortlog -sn | wc -l"], shell=True).strip()
+
+            repo.number_of_commits = subprocess.check_output(["git log --oneline | wc -l"], shell=True).strip()
+
+            repo.number_of_files = subprocess.check_output(["git ls-files | wc -l"], shell=True).strip()
 
             output = subprocess.check_output(["du -s --exclude=.git/*"], shell=True)
-            stats['size_of_files'] = output.split()[0]
+            repo.size_of_files = output.split()[0]
 
         cmd = 'cloc --not-match-f="jquery.*\.js" --ignored=%s-ignored.txt --csv --quiet %s' % (repo_dir, full_path)
         output = subprocess.check_output([cmd], shell=True)
