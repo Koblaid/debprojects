@@ -11,11 +11,13 @@ db = SQLAlchemy(app)
 
 
 class RepositoryType(db.Model):
+    def __unicode__(self): return self.name
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(10), nullable=False, unique=True)
 
 
 class Repository(db.Model):
+    def __unicode__(self): return self.url
     id = db.Column(db.Integer, primary_key=True)
     repository_type = db.Column('repository_type_id', db.Integer, db.ForeignKey('repository_type.id'), nullable=False)
     url = db.Column(db.String(500), nullable=False, unique=True)
@@ -43,6 +45,7 @@ project_repository = db.Table('project_repository',
 )
 
 class Project(db.Model):
+    def __unicode__(self): return self.name
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.String(2000))
@@ -56,16 +59,19 @@ class Project(db.Model):
 
 
 class Maintainer(db.Model):
+    def __unicode__(self): return self.name
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
 
 
 class Language(db.Model):
-     id = db.Column(db.Integer, primary_key=True)
-     name = db.Column(db.Integer, unique=True, nullable=False)
+    def __unicode__(self): return self.name
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Integer, unique=True, nullable=False)
 
 
 class UsedLanguage(db.Model):
+    def __unicode__(self): return '%s [%s]' % (self.language.name, self.repository.id)
     id = db.Column(db.Integer, primary_key=True)
     repository_id = db.Column(db.Integer, db.ForeignKey('repository.id'), nullable=False)
     repository = relationship(Repository, backref=backref('used_languages'))
